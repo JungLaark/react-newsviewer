@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# Making news-viewer with axios
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Setting
+    - yarn add axios 
+    - https://newsapi.org 사이트를 이용한다. 
+    - 가입 후 api key 받기 
+## 주요코드 
+```javascript
+    const onClickNewsEntire = async() => {
+        try{
+            const response = await axios.get('https://newsapi.org/v2/top-headlines?country=kr&apiKey=');
+            setData(response.data);
+        }catch(e){
+            console.log(e);
+        }
+    };
 
-## Available Scripts
+    const onClickNewsCategory = async() => {
+        try{
+            const response = await axios.get('https://newsapi.org/v2/top-headlines?country=kr&category=business&apiKey=');
+            setData(response.data);
+        }catch(e){
+            console.log(e);
+        }
+    }
+```
+## UI 만들기 
+    - yarn start styled-components
+## 데이터 연동 
+    - 컴포넌트가 화면에 보이는 시점에 API 요청. 
+    - useEffect를 사용하여 컴포넌트가 처음 렌더링되는 시점에 API 요청 
+    - 주의할 점: useEffect에 등록하는 함수에 async를 붙이면 안된다. useEffect에서 반환해야 하는 값은 뒷정리 함수이기 때문.
+    - 뒷정리 함수? cleanup : 메모리 누수 방지를 위해 컴포넌트를 제거하기 전 수행 
+    -> 함수 내부에 async 키워드가 붙은 함수를 따로 만들어서 사용해야 함 
 
-In the project directory, you can run:
+## Header에 Category 추가 
+    - useState로 상태관리 
+    - category값을 업데이트하는 onSelect함수 생성
+    - App.js 에서 props를 보내 초기화하고 useCallback을 사용해 이벤트 주고 받기 가능
 
-### `yarn start`
+## category 별로 데이터 가져오기 
+```javascript
+const query = category === 'all' ? '' : `&category=${category}`;
+const response = await axios
+                .get(`https://newsapi.org/v2/top-headlines?country=kr${query}&apiKey=52d4ad5cbb894b9a826830661a5b6bb6`);
+                
+```
+    - useEffect 에 의존 배열 추가해줘야 함. 안하면 
+            // React Hook useEffect has a missing dependency: 'category'. 
+            //Either include it or remove the dependency array
+    이런 오류가 뜬다.
+    이유는 category 값이 바뀔 때마다 뉴스를 새로 불러와야 하는데  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## react router 추가    
+### Route 추가 
+```bash
+yarn add react-router-dom
+```
+    - index.js 에 BrowserRouter 추가 
+    - App.js 에 Route 추가 
+```html
+<Route path="/:category?" component={NewsPage}></Route>
+```
+    - category? 에서 ? 뜻은 category 값이 있을 수도 있고 없을 수도 있다는 뜻이다. 
+    - 지금까지 했을 때는  NewsPage.js 에서
+    - Cannot read properties of undefined (reading 'category')
+    - 이런 에러가 뜬다. 
+    - {}를 안해줘서 그럼
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### NavLink 추가 
+```html
+ <Category
+    key={c.name}
+    activeClassName="active"
+    exact={c.name === 'all'}
+    to={c.name === 'all' ? '/' : `/${c.name}`}
+    >
+        {c.text}
+    </Category>
+```
 
-### `yarn test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `yarn build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Custom Hook 만들기 
+    - src/lib 폴더 생성.
+    - usePromise.js 파일 생성
+    - usePromise Hook : 대기 중, 완료 결과, 실패 결과에 대한 상태 관리.
+    - NewsList 컴포넌트에서 usePromise 사용
